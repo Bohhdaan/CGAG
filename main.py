@@ -1,50 +1,41 @@
 import pygame
 import math
-import sys
 
 pygame.init()
-WIDTH, HEIGHT = 800, 800
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Рух кіл по основі радіуса R")
-clock = pygame.time.Clock()
+width, height = 800, 600
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Дерево Мандельброта")
 
-R = 200
-r1 = 40
-r2 = 60
-center = WIDTH // 2, HEIGHT // 2
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
-theta1 = 0
-theta2 = math.pi
-speed = 0.01
+mu = 0.6
+depth = 6
+angle = math.radians(45)
 
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+def draw_branch(x1, y1, length, direction, depth):
+    if depth == 0:
+        return
+    x2 = x1 + length * math.cos(direction)
+    y2 = y1 - length * math.sin(direction)
+    pygame.draw.line(screen, WHITE, (x1, y1), (x2, y2), 2)
+    draw_branch(x2, y2, length * mu, direction + angle, depth - 1)
+    draw_branch(x2, y2, length * mu, direction - angle, depth - 1)
 
-    theta1 += speed
-    theta2 -= speed
+def main():
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        screen.fill(BLACK)
+        x0, y0 = width // 2, height - 50
+        length = 100
+        draw_branch(x0, y0, length, math.radians(90), depth)
+        pygame.display.flip()
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+    pygame.quit()
 
-    x1 = center[0] + (R - r1) * math.cos(theta1)
-    y1 = center[1] + (R - r1) * math.sin(theta1)
-    x2 = center[0] + (R - r2) * math.cos(theta2)
-    y2 = center[1] + (R - r2) * math.sin(theta2)
-
-    screen.fill((255, 255, 255))
-    pygame.draw.circle(screen, (0, 0, 0), center, R, 2)
-    pygame.draw.circle(screen, (0, 0, 255), (int(x1), int(y1)), r1)
-    pygame.draw.circle(screen, (255, 0, 0), (int(x2), int(y2)), r2)
-
-    dx = x1 - x2
-    dy = y1 - y2
-    dist = math.hypot(dx, dy)
-    if dist <= r1 + r2:
-        running = False
-
-    pygame.display.flip()
-    clock.tick(60)
-
-pygame.time.wait(2000)
-pygame.quit()
+if __name__ == "__main__":
+    main()
